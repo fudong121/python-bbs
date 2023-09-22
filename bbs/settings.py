@@ -143,8 +143,8 @@ AUTH_USER_MODEL = 'blog.UserInfo'
 EMAIL_USE_SSL = True
 EMAIL_HOST = 'smtp.qq.com'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = '1119564976@qq.com'        # 账号
-EMAIL_HOST_PASSWORD = 'huoposnrpjwujacg'    # qq邮箱的授权码而不是密码
+EMAIL_HOST_USER = '1789974086@qq.com'        # 账号
+EMAIL_HOST_PASSWORD = '**********'    # qq邮箱的授权码而不是密码
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # 日志文件目录

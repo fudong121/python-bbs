@@ -194,7 +194,7 @@ def home(request, username, **kwargs):
     ret_dic['username'] = username
     ret_dic['article_list'] = article_list
     ret_dic['blog'] = blog
-    print(user,blog)
+    print(user, blog)
     ret_dic['tag_list'] = tag_list
     ret_dic['date_list'] = date_list
     ret_dic['cate_list'] = cate_list
@@ -299,25 +299,36 @@ def cn_backend(request):
 @login_required
 def add_article(request):
     if request.method == "POST":
+        # 获取文章标题和内容
         title = request.POST.get("title")
         article_content = request.POST.get("article_content")
 
+        # 获取当前登录的用户
         user = request.user
+
+        # 使用BeautifulSoup解析文章内容
         bs = BeautifulSoup(mark_safe(article_content), "html.parser")
 
         # 过滤非法标签,防止XSS攻击
         for tag in bs.find_all():
             if tag.name in ["script", "link"]:
                 tag.decompose()
-
+        # 提取文章摘要
         desc = "摘要：" + str(bs.text)[0:50] + "..."
+
+        # 创建Article对象并保存到数据库
         article_obj = models.Article.objects.create(user=user, title=title, desc=desc)
 
-        # 文章详情添加的是过滤后的soup文档树字符串
+        # 创建ArticleDetail对象并保存到数据库，存储过滤后的文章内容
         models.ArticleDetail.objects.create(article=article_obj, content=str(bs))
 
+        # 记录用户的文章添加操作日志
         login_logger.info("【%s】添加了一篇文章%s" % (request.user.username, title))
+
+        # 重定向到首页
         return redirect("/index/")
+
+    # 如果是GET请求，渲染添加文章页面
     return render(request, "add_article.html")
 
 
@@ -336,7 +347,6 @@ def delete(request):
 
 # 文章编辑
 @login_required
-
 def edit_article(request, article_id):
     """编辑文章"""
     article_obj = models.Article.objects.filter(pk=article_id).first()
@@ -357,11 +367,12 @@ def edit_article(request, article_id):
         models.Article.objects.filter(nid=article_id).update(user=user, title=title, desc=desc)
         new_article_obj = models.Article.objects.filter(pk=article_id).first()
         # 文章详情添加的是过滤后的soup文档树字符串
-        print(new_article_obj,type(new_article_obj),article_id)
-        models.ArticleDetail.objects.filter(article_id=article_id).update(article=new_article_obj,content=str(bs))
+        print(new_article_obj, type(new_article_obj), article_id)
+        models.ArticleDetail.objects.filter(article_id=article_id).update(article=new_article_obj, content=str(bs))
         login_logger.info("【%s】编辑了一篇文章%s" % (request.user.username, title))
         return redirect("/backend/")
     return render(request, "edit_article.html", {'article_obj': article_obj, "origin_content": origin_content})
+
 
 # 上传文件
 @login_required
